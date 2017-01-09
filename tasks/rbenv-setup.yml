@@ -1,0 +1,33 @@
+
+- name: rbenvをgit clone
+  git: repo=https://github.com/rbenv/rbenv.git dest=/usr/local/rbenv
+
+- name: プラグインディレクトリ作成
+  file: path=/usr/local/rbenv/plugins state=directory
+
+- name: ruby-buildインストール
+  git: repo=https://github.com/rbenv/ruby-build.git dest=/usr/local/rbenv/plugins/ruby-build
+
+- name: sudoers.dを編集
+  copy: src=rbenv dest=/etc/sudoers.d/rbenv owner=root group=root mode=0440
+
+- name: profile.dを編集
+  copy: src=rbenv.sh dest=/etc/profile.d/rbenv.sh owner=root group=root mode=0644
+
+- name: rbenvにインストールされてるバージョンチェック
+  shell: cd; bash -lc "rbenv versions | grep -q {{ rbenv.install_ruby_version }}"
+  register: result
+  failed_when: result.rc not in [0, 1]
+
+- name: Installs ruby
+  shell: cd; bash -lc "CONFIGURE_OPTS=--disable-install-rdoc rbenv install {{ rbenv.install_ruby_version }}"
+  when: result.rc != 0
+
+- name: Sets global ruby version
+  shell: cd; bash -lc "rbenv global {{ rbenv.default_ruby_version }}"
+
+- name: rbenv rehash
+  shell: cd; bash -lc "rbenv rehash"
+
+- name: Bundlerインストール
+  shell: cd; bash -lc "gem install bundler"

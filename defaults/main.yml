@@ -1,0 +1,6 @@
+---
+
+# rbenv
+rbenv:
+  install_ruby_version: 2.3.0
+  default_ruby_version: 2.3.0
